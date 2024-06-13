@@ -19,6 +19,7 @@ export const TodoListExtra = () => {
     toggleTodo,
     setFilter,
     setInputValue,
+    reset
   } = useStore();
 
   const filteredTodos = todos.filter((todo) => {
