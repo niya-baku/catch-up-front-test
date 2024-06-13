@@ -1,5 +1,3 @@
-import { create } from 'zustand';
-
 /* 
   下記の機能を追加実装してください
   1.追加されたtodoがリロードされても状態を保持したままになっていること
@@ -14,6 +12,9 @@ import { create } from 'zustand';
   　・storeを作成後、_app.tsxのChakraProviderにthemeに反映させてください
   　・src/styles/theme.tsにスタイルを反映させるために必要なコードが記述されています。
 */
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type Todo = {
   id: number;
@@ -32,24 +33,41 @@ type State = {
   toggleTodo: (id: number) => void;
   setFilter: (filter: Filter) => void;
   setInputValue: (value: string) => void;
+  reset: () => void;
 };
 
-const useStore = create<State>((set) => ({
-  todos: [],
-  inputValue: '',
-  filter: 'all',
-  addTodo: (text) => set((state) => ({ todos: [...state.todos, { id: state.todos.length + 1, text, completed: false }] })),
-  removeTodo: (id) => set((state) => ({ todos: state.todos.filter(todo => todo.id !== id) })),
-  toggleTodo: (id) => set((state) => ({
-    todos: state.todos.map(todo => {
-      if (todo.id === id) {
-        return { ...todo, completed: !todo.completed };
-      }
-      return todo;
-    })
-  })),
-  setFilter: (filter) => set({ filter }),
-  setInputValue: (value) => set({ inputValue: value }),
-}));
+const useStore = create(persist<State>(
+  (set) => ({
+    todos: [],
+    inputValue: '',
+    filter: 'all',
+    addTodo: (text) => set((state) => ({ todos: [...state.todos, { id: state.todos.length + 1, text, completed: false }] })),
+    removeTodo: (id) => set((state) => ({ todos: state.todos.filter(todo => todo.id !== id) })),
+    toggleTodo: (id) => set((state) => ({
+      todos: state.todos.map(todo => {
+        if (todo.id === id) {
+          return { ...todo, completed: !todo.completed };
+        }
+        return todo;
+      })
+    })),
+    setFilter: (filter) => set({ filter }),
+    setInputValue: (value) => set({ inputValue: value }),
+    reset: () => set({ todos: [] })
+  }),
+  { name: 'todo-app-extra' }
+))
 
 export { useStore };
+
+type Theme = {
+  isDarkMode: boolean
+  toggleTheme: () => void
+}
+
+const useThemeStore = create<Theme>((set) => ({
+  isDarkMode: true,
+  toggleTheme: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+}));
+
+export { useThemeStore };
